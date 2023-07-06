@@ -74,6 +74,9 @@ static modo_t modo;
 
 /* === Private variable definitions ============================================================ */
 
+static const uint8_t LIMITE_MINUTOS[] = {5, 9};
+static const uint8_t LIMITE_HORAS[] = {2, 3};
+
 /* === Private function implementation ========================================================= */
 void ActivarAlarma(bool reloj) {
 }
@@ -109,6 +112,34 @@ void CambiarModo(modo_t valor) {
         break;
     default:
         break;
+    }
+}
+
+void IncrementarBCD(uint8_t numero[2], const uint8_t limite[2]) {
+    numero[1]++;
+    if (numero[1] > limite[1]) {
+        numero[1] = 0;
+        numero[0]++;
+        if (numero[0] > limite[0]) {
+            numero[0] = 0;
+        }
+    }
+    if (numero[0] > limite[0] && numero[1] > limite[1]) {
+        numero[1] = 0;
+        numero[0] = 0;
+    }
+}
+
+void DecrementarBCD(uint8_t numero[2], const uint8_t limite[2]) {
+    if (numero[1] == 0) {
+        numero[1] = limite[1];
+        if (numero[0] == 0) {
+            numero[0] = limite[0];
+        } else {
+            numero[0]--;
+        }
+    } else {
+        numero[1]--;
     }
 }
 
@@ -171,18 +202,18 @@ int main(void) {
 
         if (DigitalInputHasActivated(board->decrement)) {
             if (modo == AJUSTANDO_MINUTOS_ACTUAL || modo == AJUSTANDO_MINUTOS_ALARMA) {
-                entrada[3] = entrada[3] - 1;
+                DecrementarBCD(&entrada[2], LIMITE_MINUTOS);
             } else if (modo == AJUSTANDO_HORAS_ACTUAL || modo == AJUSTANDO_HORAS_ALARMA) {
-                entrada[1] = entrada[1] - 1;
+                DecrementarBCD(entrada, LIMITE_HORAS);
             }
             DisplayWriteBCD(board->display, entrada, sizeof(entrada));
         }
 
         if (DigitalInputHasActivated(board->increment)) {
             if (modo == AJUSTANDO_MINUTOS_ACTUAL || modo == AJUSTANDO_MINUTOS_ALARMA) {
-                entrada[3] = entrada[3] + 1;
+                IncrementarBCD(&entrada[2], LIMITE_MINUTOS);
             } else if (modo == AJUSTANDO_HORAS_ACTUAL || modo == AJUSTANDO_HORAS_ALARMA) {
-                entrada[1] = entrada[1] + 1;
+                IncrementarBCD(entrada, LIMITE_HORAS);
             }
             DisplayWriteBCD(board->display, entrada, sizeof(entrada));
         }
