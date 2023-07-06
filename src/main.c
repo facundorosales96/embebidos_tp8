@@ -71,6 +71,7 @@ static board_t board;
 static clock_t reloj;
 
 static modo_t modo;
+static bool sonar_alarma = false;
 
 /* === Private variable definitions ============================================================ */
 
@@ -78,7 +79,17 @@ static const uint8_t LIMITE_MINUTOS[] = {5, 9};
 static const uint8_t LIMITE_HORAS[] = {2, 3};
 
 /* === Private function implementation ========================================================= */
-void ActivarAlarma(bool reloj) {
+void SonarAlarma(bool reloj) {
+    sonar_alarma = reloj;
+
+    if (reloj) {
+        // DisplayToggleDot(board->display, 0);
+        DigitalOutputActivate(board->buzzer);
+
+    } else {
+        // DisplayToggleDot(board->display, 0);
+        DigitalOutputDeactivate(board->buzzer);
+    }
 }
 
 void CambiarModo(modo_t valor) {
@@ -155,7 +166,7 @@ int main(void) {
 
     uint8_t entrada[4];
 
-    reloj = ClockCreate(1000, ActivarAlarma);
+    reloj = ClockCreate(1000, SonarAlarma);
 
     board = BoardCreate();
 
@@ -167,6 +178,13 @@ int main(void) {
 
     while (true) {
         if (DigitalInputHasActivated(board->accept)) {
+            if (modo == MOSTRANDO_HORA) {
+                ActivateAlarm(reloj, true);
+                //
+                if (sonar_alarma) {
+                    ExtendAlarm(reloj, 5);
+                }
+            }
             if (modo == AJUSTANDO_MINUTOS_ACTUAL) {
                 CambiarModo(AJUSTANDO_HORAS_ACTUAL);
             } else if (modo == AJUSTANDO_HORAS_ACTUAL) {
@@ -176,12 +194,20 @@ int main(void) {
             if (modo == AJUSTANDO_MINUTOS_ALARMA) {
                 CambiarModo(AJUSTANDO_HORAS_ALARMA);
             } else if (modo == AJUSTANDO_HORAS_ALARMA) {
-                ClockSetTime(reloj, entrada, sizeof(entrada));
+                AlarmSetTime(reloj, entrada, sizeof(entrada));
                 CambiarModo(MOSTRANDO_HORA);
             }
         }
 
         if (DigitalInputHasActivated(board->cancel)) {
+            if (modo == MOSTRANDO_HORA) {
+
+                if (sonar_alarma) {
+                    DisableAlarm(reloj);
+                } else {
+                    ActivateAlarm(reloj, false);
+                }
+            }
             if (ClockGetTime(reloj, entrada, sizeof(entrada))) {
                 CambiarModo(MOSTRANDO_HORA);
             } else {
@@ -243,6 +269,9 @@ void SysTick_Handler(void) {
             DisplayWriteBCD(board->display, hora, sizeof(hora));
             if (current_value) {
                 DisplayToggleDot(board->display, 1);
+            }
+            if (AlarmGetState(reloj)) {
+                DisplayToggleDot(board->display, 3);
             }
         }
     };

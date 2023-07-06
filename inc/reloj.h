@@ -61,6 +61,7 @@ void AlarmSetTime(clock_t reloj, const uint8_t * hora, int size);
 void ActivateAlarm(clock_t reloj, bool status);
 void ExtendAlarm(clock_t reloj, int minutos);
 void DisableAlarm(clock_t reloj);
+bool AlarmGetState(clock_t reloj);
 
 /* === End of documentation ==================================================================== */
 

@@ -180,6 +180,10 @@ void DisableAlarm(clock_t reloj) {
     reloj->EnableAlarm(false);
 }
 
+bool AlarmGetState(clock_t reloj) {
+    return reloj->activate_alarm;
+}
+
 /* === End of documentation ==================================================================== */
 
 /** @} End of module definition for doxygen */
