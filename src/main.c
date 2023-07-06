@@ -73,7 +73,7 @@ void ActivarAlarma(bool reloj) {
 int main(void) {
 
     uint8_t hora[6];
-    reloj = ClockCreate(10, ActivarAlarma);
+    reloj = ClockCreate(1, ActivarAlarma);
 
     board = BoardCreate();
 
