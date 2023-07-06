@@ -50,6 +50,14 @@
 /* === Macros definitions ====================================================================== */
 
 /* === Private data type declarations ========================================================== */
+typedef enum {
+    SIN_CONFIGURAR,
+    MOSTRANDO_HORA,
+    AJUSTANDO_MINUTOS_ACTUAL,
+    AJUSTANDO_HORAS_ACTUAL,
+    AJUSTANDO_MINUTOS_ALARMA,
+    AJUSTANDO_HORAS_ALARMA,
+} modo_t;
 
 /* === Private variable declarations =========================================================== */
 
@@ -62,6 +70,8 @@ void ActivarAlarma(bool reloj);
 static board_t board;
 static clock_t reloj;
 
+static modo_t modo;
+
 /* === Private variable definitions ============================================================ */
 
 /* === Private function implementation ========================================================= */
@@ -72,12 +82,14 @@ void ActivarAlarma(bool reloj) {
 
 int main(void) {
 
-    uint8_t hora[6];
     reloj = ClockCreate(1000, ActivarAlarma);
 
     board = BoardCreate();
 
+    modo = SIN_CONFIGURAR;
+
     SisTick_Init(1000);
+    DisplayFlashDigits(board->display, 0, 3, 200);
 
     // DisplayWriteBCD(board->display, (uint8_t[]){1, 2, 3, 4}, 4);
     // DisplayToggleDot(board->display, 1);
@@ -111,21 +123,29 @@ int main(void) {
             }
         }
 
-        ClockGetTime(reloj, hora, sizeof(hora));
+        /*ClockGetTime(reloj, hora, sizeof(hora));
         __asm volatile("cpsid i");
         DisplayWriteBCD(board->display, hora, sizeof(hora));
-        __asm volatile("cpsie i");
+        __asm volatile("cpsie i");*/
     }
 }
 
 void SysTick_Handler(void) {
     static bool last_value = false;
     bool current_value;
+    uint8_t hora[6];
+
     DisplayRefresh(board->display);
     current_value = ClockUpdate(reloj);
+
     if (current_value != last_value) {
-        DisplayToggleDot(board->display, 1);
         last_value = current_value;
+
+        if (modo <= MOSTRANDO_HORA) {
+            ClockGetTime(reloj, hora, sizeof(hora));
+            DisplayWriteBCD(board->display, hora, sizeof(hora));
+            DisplayToggleDot(board->display, 1);
+        }
     };
 }
 /* === End of documentation ==================================================================== */
