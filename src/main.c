@@ -42,6 +42,7 @@
 
 #include "bspciaa.h"
 #include "chip.h"
+#include "reloj.h"
 #include <digital.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -52,19 +53,27 @@
 
 /* === Private variable declarations =========================================================== */
 
-static board_t board;
-
 /* === Private function declarations =========================================================== */
 
+void ActivarAlarma(bool reloj);
+
 /* === Public variable definitions ============================================================= */
+
+static board_t board;
+static clock_t reloj;
 
 /* === Private variable definitions ============================================================ */
 
 /* === Private function implementation ========================================================= */
+void ActivarAlarma(bool reloj) {
+}
 
 /* === Public function implementation ========================================================= */
 
 int main(void) {
+
+    uint8_t hora[6];
+    reloj = ClockCreate(10, ActivarAlarma);
 
     board = BoardCreate();
 
@@ -104,11 +113,17 @@ int main(void) {
                 __asm("NOP");
             }
         }
+
+        ClockGetTime(reloj, hora, sizeof(hora));
+        __asm volatile("cpsid i");
+        DisplayWriteBCD(board->display, hora, sizeof(hora));
+        __asm volatile("cpsie i");
     }
 }
 
 void SysTick_Handler(void) {
     DisplayRefresh(board->display);
+    ClockUpdate(reloj);
 }
 /* === End of documentation ==================================================================== */
 
