@@ -116,30 +116,36 @@ void CambiarModo(modo_t valor) {
 }
 
 void IncrementarBCD(uint8_t numero[2], const uint8_t limite[2]) {
-    numero[1]++;
-    if (numero[1] > limite[1]) {
-        numero[1] = 0;
-        numero[0]++;
-        if (numero[0] > limite[0]) {
-            numero[0] = 0;
-        }
-    }
-    if (numero[0] > limite[0] && numero[1] > limite[1]) {
-        numero[1] = 0;
+    if (numero[0] == limite[0] && numero[1] == limite[1]) {
         numero[0] = 0;
+        numero[1] = 0;
+    } else {
+        numero[1]++;
+        if (numero[1] > 9) {
+            numero[1] = 0;
+            numero[0]++;
+            if (numero[0] > limite[0]) {
+                numero[0] = 0;
+            }
+        }
     }
 }
 
 void DecrementarBCD(uint8_t numero[2], const uint8_t limite[2]) {
-    if (numero[1] == 0) {
+    if (numero[0] == 0 && numero[1] == 0) {
+        numero[0] = limite[0];
         numero[1] = limite[1];
-        if (numero[0] == 0) {
-            numero[0] = limite[0];
-        } else {
-            numero[0]--;
-        }
     } else {
-        numero[1]--;
+        if (numero[1] == 0) {
+            numero[1] = 9;
+            if (numero[0] == 0) {
+                numero[0] = limite[0];
+            } else {
+                numero[0]--;
+            }
+        } else {
+            numero[1]--;
+        }
     }
 }
 
@@ -156,11 +162,8 @@ int main(void) {
     modo = SIN_CONFIGURAR;
 
     SisTick_Init(1000);
-    // DisplayFlashDigits(board->display, 0, 3, 200);
-    CambiarModo(SIN_CONFIGURAR);
 
-    // DisplayWriteBCD(board->display, (uint8_t[]){1, 2, 3, 4}, 4);
-    // DisplayToggleDot(board->display, 1);
+    CambiarModo(SIN_CONFIGURAR);
 
     while (true) {
         if (DigitalInputHasActivated(board->accept)) {
@@ -176,7 +179,6 @@ int main(void) {
                 ClockSetTime(reloj, entrada, sizeof(entrada));
                 CambiarModo(MOSTRANDO_HORA);
             }
-            // DisplayFlashDigits(board->display, 0, 1, 0);
         }
 
         if (DigitalInputHasActivated(board->cancel)) {
@@ -185,7 +187,6 @@ int main(void) {
             } else {
                 CambiarModo(SIN_CONFIGURAR);
             };
-            // DisplayFlashDigits(board->display, 0, 1, 100);
         }
 
         if (DigitalInputHasActivated(board->set_time)) {
@@ -218,18 +219,11 @@ int main(void) {
             DisplayWriteBCD(board->display, entrada, sizeof(entrada));
         }
 
-        // DisplayRefresh(board->display);
-
         for (int index = 0; index < 100; index++) {
             for (int delay = 0; delay < 200; delay++) {
                 __asm("NOP");
             }
         }
-
-        /*ClockGetTime(reloj, hora, sizeof(hora));
-        __asm volatile("cpsid i");
-        DisplayWriteBCD(board->display, hora, sizeof(hora));
-        __asm volatile("cpsie i");*/
     }
 }
 
