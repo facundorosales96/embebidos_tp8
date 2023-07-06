@@ -29,7 +29,7 @@ SPDX-License-Identifier: MIT
 
 /* === Headers files inclusions =============================================================== */
 
-#include "bsp.h"
+#include "bspciaa.h"
 #include "chip.h"
 #include "display.h"
 #include "poncho.h"
@@ -180,6 +180,18 @@ board_t BoardCreate(void) {
     return &board;
 }
 
+void SisTick_Init(uint16_t ticks) {
+    __asm volatile("cpsid i");
+
+    /* Activate SysTick*/
+    SystemCoreClockUpdate();
+    SysTick_Config(SystemCoreClock / ticks);
+
+    /* Update priority set by SysTick_Cofig*/
+    // NVIC_SetPriority(SysTick_IRQn, (1 << __NVIC_PRIO_BITS) - 1);
+
+    __asm volatile("cpsie i");
+}
 /******************/
 
 /* === End of documentation ==================================================================== */

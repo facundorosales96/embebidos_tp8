@@ -19,8 +19,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 SPDX-License-Identifier: MIT
 *************************************************************************************************/
 
-#ifndef BSP_H
-#define BSP_H
+#ifndef BSPCIAA_H
+#define BSPCIAA_H
 
 /** \brief Board Hardware Support (BSP)
  **
@@ -58,7 +58,7 @@ typedef struct board_s {
     digital_input_t accept;    //!< Puntero a descriptor de la entrada accept
     digital_input_t cancel;    //!< Puntero a descriptor de la entrada cancel
     display_t display;         //!< Puntero a descirptor de la pantalla
-} const * const board_t;
+} const * board_t;
 
 /* === Public variable declarations ============================================================ */
 
@@ -69,6 +69,7 @@ typedef struct board_s {
  * @return board_t
  */
 board_t BoardCreate(void);
+void SisTick_Init(uint16_t ticks);
 
 /* === End of documentation ==================================================================== */
 
@@ -78,4 +79,4 @@ board_t BoardCreate(void);
 
 /** @} End of module definition for doxygen */
 
-#endif /* BSP_H */
+#endif /* BSPCIAA_H */

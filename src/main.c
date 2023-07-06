@@ -40,7 +40,7 @@
 
 /* === Headers files inclusions =============================================================== */
 
-#include "bsp.h"
+#include "bspciaa.h"
 #include "chip.h"
 #include <digital.h>
 #include <stdbool.h>
@@ -51,6 +51,8 @@
 /* === Private data type declarations ========================================================== */
 
 /* === Private variable declarations =========================================================== */
+
+static board_t board;
 
 /* === Private function declarations =========================================================== */
 
@@ -64,7 +66,9 @@
 
 int main(void) {
 
-    board_t board = BoardCreate();
+    board = BoardCreate();
+
+    SisTick_Init(1000);
 
     while (true) {
         if (DigitalInputHasActivated(board->accept)) {
@@ -93,7 +97,7 @@ int main(void) {
             DisplayWriteBCD(board->display, (uint8_t[]){0, 0, 0, 1}, 4);
         }
 
-        DisplayRefresh(board->display);
+        // DisplayRefresh(board->display);
 
         for (int index = 0; index < 100; index++) {
             for (int delay = 0; delay < 200; delay++) {
@@ -103,6 +107,9 @@ int main(void) {
     }
 }
 
+void SysTick_Handler(void) {
+    DisplayRefresh(board->display);
+}
 /* === End of documentation ==================================================================== */
 
 /** @} End of module definition for doxygen */
