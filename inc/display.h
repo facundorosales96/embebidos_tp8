@@ -99,6 +99,8 @@ void DisplayWriteBCD(display_t display, uint8_t * number, uint8_t size);
  */
 void DisplayRefresh(display_t display);
 
+void DisplayFlashDigits(display_t display, uint8_t from, uint8_t to, uint16_t frecuency);
+
 /* === Public function declarations ============================================================ */
 
 /* === End of documentation ==================================================================== */
