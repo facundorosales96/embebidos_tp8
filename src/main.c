@@ -73,23 +73,25 @@ void ActivarAlarma(bool reloj) {
 int main(void) {
 
     uint8_t hora[6];
-    reloj = ClockCreate(1, ActivarAlarma);
+    reloj = ClockCreate(1000, ActivarAlarma);
 
     board = BoardCreate();
 
     SisTick_Init(1000);
 
+    // DisplayWriteBCD(board->display, (uint8_t[]){1, 2, 3, 4}, 4);
+    // DisplayToggleDot(board->display, 1);
+
     while (true) {
         if (DigitalInputHasActivated(board->accept)) {
-            DisplayFlashDigits(board->display, 0, 1, 0);
+            // DisplayFlashDigits(board->display, 0, 1, 0);
         }
 
         if (DigitalInputHasActivated(board->cancel)) {
-            DisplayFlashDigits(board->display, 0, 1, 100);
+            // DisplayFlashDigits(board->display, 0, 1, 100);
         }
 
         if (DigitalInputHasActivated(board->set_time)) {
-            DisplayToggleDot(board->display, 1);
         }
 
         if (DigitalInputHasActivated(board->set_alarm)) {
@@ -117,8 +119,14 @@ int main(void) {
 }
 
 void SysTick_Handler(void) {
+    static bool last_value = false;
+    bool current_value;
     DisplayRefresh(board->display);
-    ClockUpdate(reloj);
+    current_value = ClockUpdate(reloj);
+    if (current_value != last_value) {
+        DisplayToggleDot(board->display, 1);
+        last_value = current_value;
+    };
 }
 /* === End of documentation ==================================================================== */
 

@@ -142,7 +142,7 @@ void ActivateAlarm(clock_t reloj, bool status) {
     reloj->activate_alarm = status;
 }
 
-void ClockUpdate(clock_t reloj) {
+bool ClockUpdate(clock_t reloj) {
     reloj->tics--;
 
     if (reloj->tics == 0) {
@@ -154,6 +154,11 @@ void ClockUpdate(clock_t reloj) {
             reloj->hora_actual[0] = 0;
             reloj->hora_actual[1] = 0;
         }
+    }
+    if (reloj->tics < (reloj->tics_por_segundo / 2)) {
+        return true;
+    } else {
+        return false;
     }
 }
 
