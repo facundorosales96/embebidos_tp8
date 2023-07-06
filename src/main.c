@@ -89,6 +89,7 @@ int main(void) {
         }
 
         if (DigitalInputHasActivated(board->set_time)) {
+            DisplayToggleDot(board->display, 1);
         }
 
         if (DigitalInputHasActivated(board->set_alarm)) {

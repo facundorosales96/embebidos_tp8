@@ -101,6 +101,8 @@ void DisplayRefresh(display_t display);
 
 void DisplayFlashDigits(display_t display, uint8_t from, uint8_t to, uint16_t frecuency);
 
+void DisplayToggleDot(display_t display, uint8_t position);
+
 /* === Public function declarations ============================================================ */
 
 /* === End of documentation ==================================================================== */
