@@ -73,6 +73,7 @@ static clock_t reloj;
 static modo_t modo;
 static bool sonar_alarma = false;
 static uint32_t tiempo_pulsacion = 0;
+static uint32_t timeout = 0;
 
 /* === Private variable definitions ============================================================ */
 
@@ -84,11 +85,11 @@ void SonarAlarma(bool reloj) {
     sonar_alarma = reloj;
 
     if (reloj) {
-        // DisplayToggleDot(board->display, 0);
+
         DigitalOutputActivate(board->buzzer);
 
     } else {
-        // DisplayToggleDot(board->display, 0);
+
         DigitalOutputDeactivate(board->buzzer);
     }
 }
@@ -181,7 +182,7 @@ int main(void) {
         if (DigitalInputHasActivated(board->accept)) {
             if (modo == MOSTRANDO_HORA) {
                 ActivateAlarm(reloj, true);
-                //
+
                 if (sonar_alarma) {
                     ExtendAlarm(reloj, 5);
                 }
@@ -198,6 +199,7 @@ int main(void) {
                 AlarmSetTime(reloj, entrada, sizeof(entrada));
                 CambiarModo(MOSTRANDO_HORA);
             }
+            timeout = 0;
         }
 
         if (DigitalInputHasActivated(board->cancel)) {
@@ -223,6 +225,7 @@ int main(void) {
                 DisplayWriteBCD(board->display, entrada, sizeof(entrada));
                 tiempo_pulsacion = 0;
             }
+            timeout = 0;
         }
 
         if (DigitalInputGetState(board->set_alarm)) {
@@ -231,6 +234,7 @@ int main(void) {
                 AlarmGetTime(reloj, entrada, sizeof(entrada));
                 DisplayWriteBCD(board->display, entrada, sizeof(entrada));
             }
+            timeout = 0;
         }
 
         if (DigitalInputHasActivated(board->decrement)) {
@@ -240,6 +244,7 @@ int main(void) {
                 DecrementarBCD(entrada, LIMITE_HORAS);
             }
             DisplayWriteBCD(board->display, entrada, sizeof(entrada));
+            timeout = 0;
         }
 
         if (DigitalInputHasActivated(board->increment)) {
@@ -249,6 +254,7 @@ int main(void) {
                 IncrementarBCD(entrada, LIMITE_HORAS);
             }
             DisplayWriteBCD(board->display, entrada, sizeof(entrada));
+            timeout = 0;
         }
 
         for (int index = 0; index < 100; index++) {
@@ -280,6 +286,15 @@ void SysTick_Handler(void) {
         if (AlarmGetState(reloj)) {
             DisplayToggleDot(board->display, 3);
         }
+    }
+    timeout++;
+    if ((timeout > 30000) && (modo > MOSTRANDO_HORA)) {
+        if (ClockGetTime(reloj, hora, sizeof(hora))) {
+            CambiarModo(MOSTRANDO_HORA);
+        } else {
+            CambiarModo(SIN_CONFIGURAR);
+        }
+        timeout = 0;
     }
 }
 /* === End of documentation ==================================================================== */
