@@ -72,6 +72,7 @@ static clock_t reloj;
 
 static modo_t modo;
 static bool sonar_alarma = false;
+static uint32_t tiempo_pulsacion = 0;
 
 /* === Private variable definitions ============================================================ */
 
@@ -215,16 +216,21 @@ int main(void) {
             };
         }
 
-        if (DigitalInputHasActivated(board->set_time)) {
-            CambiarModo(AJUSTANDO_MINUTOS_ACTUAL);
-            ClockGetTime(reloj, entrada, sizeof(entrada));
-            DisplayWriteBCD(board->display, entrada, sizeof(entrada));
+        if (DigitalInputGetState(board->set_time)) {
+            if ((tiempo_pulsacion > 3000) && (modo <= MOSTRANDO_HORA)) {
+                CambiarModo(AJUSTANDO_MINUTOS_ACTUAL);
+                ClockGetTime(reloj, entrada, sizeof(entrada));
+                DisplayWriteBCD(board->display, entrada, sizeof(entrada));
+                tiempo_pulsacion = 0;
+            }
         }
 
-        if (DigitalInputHasActivated(board->set_alarm)) {
-            CambiarModo(AJUSTANDO_MINUTOS_ALARMA);
-            AlarmGetTime(reloj, entrada, sizeof(entrada));
-            DisplayWriteBCD(board->display, entrada, sizeof(entrada));
+        if (DigitalInputGetState(board->set_alarm)) {
+            if ((tiempo_pulsacion > 3000) && (modo <= MOSTRANDO_HORA)) {
+                CambiarModo(AJUSTANDO_MINUTOS_ALARMA);
+                AlarmGetTime(reloj, entrada, sizeof(entrada));
+                DisplayWriteBCD(board->display, entrada, sizeof(entrada));
+            }
         }
 
         if (DigitalInputHasActivated(board->decrement)) {
@@ -254,27 +260,27 @@ int main(void) {
 }
 
 void SysTick_Handler(void) {
-    static bool last_value = false;
     bool current_value;
     uint8_t hora[6];
 
     DisplayRefresh(board->display);
     current_value = ClockUpdate(reloj);
 
-    if (current_value != last_value) {
-        last_value = current_value;
-
-        if (modo <= MOSTRANDO_HORA) {
-            ClockGetTime(reloj, hora, sizeof(hora));
-            DisplayWriteBCD(board->display, hora, sizeof(hora));
-            if (current_value) {
-                DisplayToggleDot(board->display, 1);
-            }
-            if (AlarmGetState(reloj)) {
-                DisplayToggleDot(board->display, 3);
-            }
+    if (modo <= MOSTRANDO_HORA) {
+        ClockGetTime(reloj, hora, sizeof(hora));
+        DisplayWriteBCD(board->display, hora, sizeof(hora));
+        if (DigitalInputGetState(board->set_time) || DigitalInputGetState(board->set_alarm)) {
+            tiempo_pulsacion++;
+        } else {
+            tiempo_pulsacion = 0;
         }
-    };
+        if (current_value) {
+            DisplayToggleDot(board->display, 1);
+        }
+        if (AlarmGetState(reloj)) {
+            DisplayToggleDot(board->display, 3);
+        }
+    }
 }
 /* === End of documentation ==================================================================== */
 
